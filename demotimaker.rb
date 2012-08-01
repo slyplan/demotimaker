@@ -4,7 +4,18 @@ class Demotimaker
 
   include Magick
   
-  CONFIG = {:max_width => 500, :max_height => 400, :border => 40, :textarea => 100, :title_pointsize => 64, :text_pointsize => 24}
+  CONFIG = {
+    :max_width => 500,
+    :max_height => 400,
+    :border => 40,
+    :textarea => 100,
+    :title_pointsize => 64,
+    :text_pointsize => 24,
+    :white_line => 3,
+    :black_line => 3,
+    :signature_lenght => 100,
+    :signature_size => 12
+  }
 
   def initialize(image, title = "", text = "")
     @image = Image.read(image).first
@@ -31,6 +42,14 @@ class Demotimaker
 
   def generate
     background = Image.new(@full_width, @full_height) { self.background_color = 'black'}
+    black_line_width = CONFIG[:black_line] * 2
+    white_line_width = CONFIG[:white_line] * 2 + black_line_width
+    white_line = Image.new(@image.columns + white_line_width, @image.rows + white_line_width) { self.background_color = 'white'}
+    black_line = Image.new(@image.columns + black_line_width, @image.rows + black_line_width) { self.background_color = 'black'}
+    
+    background = background.composite(white_line, CONFIG[:border] - CONFIG[:black_line] - CONFIG[:white_line],  CONFIG[:border] - CONFIG[:black_line] - CONFIG[:white_line], OverCompositeOp)
+    background = background.composite(black_line, CONFIG[:border] - CONFIG[:white_line],  CONFIG[:border] - CONFIG[:white_line], OverCompositeOp)
+
     composition = background.composite(@image, CONFIG[:border], CONFIG[:border], OverCompositeOp)
 
     title_draw = Draw.new
@@ -38,17 +57,41 @@ class Demotimaker
       self.font = File.join(File.dirname('__FILE__'), 'fonts', 'times.ttf')
       self.fill = 'white'
       self.pointsize = CONFIG[:title_pointsize]
+      self.kerning = 1
       self.align = CenterAlign
     }
 
-    composition = composition.annotate(title_draw, 0, 0, @full_width / 2, @image.rows + CONFIG[:border] * 2 + CONFIG[:title_pointsize] + CONFIG[:text_pointsize] / 2, @text) {
+    composition = composition.annotate(title_draw, 0, 0, @full_width / 2, @image.rows + CONFIG[:border] * 2 + CONFIG[:title_pointsize], @text) {
       self.font = File.join(File.dirname('__FILE__'), 'fonts', 'times.ttf')
       self.fill = 'white'
       self.pointsize = CONFIG[:text_pointsize]
+      self.kerning = 1
       self.align = CenterAlign
     }
 
+    composition["demotivator-generator"] = "slyplan"
+    composition["demotivator-generator-version"] = "0.1"
+    composition["demotivator-title"] = @title
+    composition["demotivator-text"] = @text
 
     @demotivator = composition
   end
+
+  #TODO
+  def add_signature(signature)
+    signature_draw = Draw.new
+    black = Image.new(@full_width, @full_height) { self.background_color = 'black'}
+    black = black.annotate(signature_draw, 0, 0, 0, 0, signature) {
+      self.fill = 'white'
+      self.pointsize = CONFIG[:signature_size]
+      self.gravity = CenterGravity
+    }
+    @demoticator = @demotivator.composite(black, @full_width - CONFIG[:signature_lenght] - CONFIG[:border], @full_height - CONFIG[:border] - CONFIG[:textarea], OverCompositeOp)
+  end
+
+  def save(file)
+    generate if new?
+    @demotivator.write(file)
+  end
+  
 end
