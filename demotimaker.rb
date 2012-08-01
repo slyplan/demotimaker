@@ -13,7 +13,7 @@ class Demotimaker
     :text_pointsize => 24,
     :white_line => 3,
     :black_line => 3,
-    :signature_lenght => 100,
+    :signature_lenght => 120,
     :signature_size => 12
   }
 
@@ -40,7 +40,7 @@ class Demotimaker
     @demotivator.display
   end
 
-  def generate
+  def generate(signature = nil)
     background = Image.new(@full_width, @full_height) { self.background_color = 'black'}
     black_line_width = CONFIG[:black_line] * 2
     white_line_width = CONFIG[:white_line] * 2 + black_line_width
@@ -75,18 +75,20 @@ class Demotimaker
     composition["demotivator-text"] = @text
 
     @demotivator = composition
+    add_signature(signature) unless signature.nil?
   end
 
-  #TODO
   def add_signature(signature)
+    return false if new?
     signature_draw = Draw.new
-    black = Image.new(@full_width, @full_height) { self.background_color = 'black'}
-    black = black.annotate(signature_draw, 0, 0, 0, 0, signature) {
+    signature_image = Image.new(CONFIG[:signature_lenght], CONFIG[:signature_size] + 2) { self.background_color = 'black'}
+    signature_image = signature_image.annotate(signature_draw, 0, 0, 0, 0, signature) {
       self.fill = 'white'
       self.pointsize = CONFIG[:signature_size]
       self.gravity = CenterGravity
     }
-    @demoticator = @demotivator.composite(black, @full_width - CONFIG[:signature_lenght] - CONFIG[:border], @full_height - CONFIG[:border] - CONFIG[:textarea], OverCompositeOp)
+    @demotivator = @demotivator.composite(signature_image, @full_width - CONFIG[:signature_lenght] - CONFIG[:border], @full_height - CONFIG[:border] - CONFIG[:textarea], OverCompositeOp)
+    true
   end
 
   def save(file)
