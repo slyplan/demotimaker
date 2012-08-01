@@ -40,6 +40,8 @@ class Demotimaker
     @demotivator.display
   end
 
+  #TODO
+  #Too large mathod make it smaller
   def generate(signature = nil)
     background = Image.new(@full_width, @full_height) { self.background_color = 'black'}
     black_line_width = CONFIG[:black_line] * 2
@@ -78,6 +80,7 @@ class Demotimaker
     add_signature(signature) unless signature.nil?
   end
 
+  #TODO add dynamycal generation of signature_lenght
   def add_signature(signature)
     return false if new?
     signature_draw = Draw.new
