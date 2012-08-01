@@ -3,6 +3,6 @@ Small library for dinamycal generation of demotivators
 Usage:
 
 demotivator = Demotimaker.new('joker.jpg', 'JOKER', 'Why so serous?')
-demoticator.save('newfile.jpg')
+demotivator.save('newfile.jpg')
 
 PROFIT.
