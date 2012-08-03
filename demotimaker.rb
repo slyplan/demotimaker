@@ -19,10 +19,7 @@ class Demotimaker
 
   def initialize(image, title = "", text = "")
     @image = Image.read(image).first
-    width_prop = CONFIG[:max_width].to_f / @image.columns.to_f
-    height_prop = CONFIG[:max_height].to_f / @image.rows.to_f
-    coef = width_prop > height_prop ? width_prop : height_prop
-    @image.resize!(coef)
+    @image.resize_to_fit!(CONFIG[:max_width], CONFIG[:max_height])
 
     @full_width = @image.columns + CONFIG[:border] * 2
     @full_height = @image.rows + CONFIG[:border] * 2 + CONFIG[:textarea]
@@ -41,7 +38,7 @@ class Demotimaker
   end
 
   #TODO
-  #Too large mathod make it smaller
+  #Too large method make it smaller
   def generate(signature = nil)
     background = Image.new(@full_width, @full_height) { self.background_color = 'black'}
     black_line_width = CONFIG[:black_line] * 2
@@ -78,6 +75,8 @@ class Demotimaker
 
     @demotivator = composition
     add_signature(signature) unless signature.nil?
+
+    self
   end
 
   #TODO add dynamycal generation of signature_lenght
